@@ -1,0 +1,15 @@
+# streamlit>=1.22.0
+# python-dotenv
+# moviepy>=1.0.3
+# pydub>=0.25.1
+# openai-whisper>=20230314
+# numpy
+# ffmpeg-python
+# google-genai>=0.6.0    # Google GenAI SDK (or google-generativeai if you prefer legacy)
+# If google-genai isn't available in your environment, you can `pip install google-generativeai` instead,
+# but google-genai (google-genai) is the modern SDK recommended by Google (see docs).
+
+streamlit
+google-genai
+pydantic
+python-dotenv
