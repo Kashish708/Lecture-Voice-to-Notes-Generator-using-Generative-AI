@@ -8,12 +8,10 @@ from google.genai.errors import APIError
 from pydantic import BaseModel, Field
 from typing import List
 
-# --- NEW: Load environment variables from .env file ---
+
 from dotenv import load_dotenv
 load_dotenv() 
-# -----------------------------------------------------
 
-# --- 1. Pydantic Models for Structured Output ---
 
 class Flashcard(BaseModel):
     """Defines the structure for a single flashcard item."""
@@ -37,16 +35,16 @@ class LectureQuiz(BaseModel):
     questions: List[QuizQuestion] = Field(description="A list of 5 generated quiz questions.")
 
 
-# --- 2. Core AI Functions ---
+
 
 @st.cache_resource
 def get_ai_client():
     """Initializes and returns the Gemini client using environment variable."""
-    # Check for the key after load_dotenv has run
+  
     api_key = os.environ.get('GEMINI_API_KEY') or os.environ.get('GOOGLE_API_KEY')
     
     if not api_key:
-        # Display an error directly in Streamlit if the key is missing
+        
         st.error("🚨 AI API Key Missing!")
         st.warning(
             "The app could not find the API key. Please ensure you have a **.env** file "
@@ -56,9 +54,9 @@ def get_ai_client():
         return None
         
     try:
-        # The client automatically picks up the key if set correctly
+       
         client = genai.Client()
-        # Test connection by listing models to ensure key validity
+
         client.models.list() 
         return client
     except Exception as e:
@@ -95,7 +93,7 @@ def generate_study_content(client: genai.Client, transcript: str, content_type: 
     st.info(f"Step {step_number}/4: Generating {content_type}...")
 
     if content_type == "Summary Notes":
-        # Simple text generation for notes
+        
         system_prompt = (
             "You are an academic note-taker. Convert the time-synced transcript into "
             "clear, well-structured study notes using Markdown (headings, bolding, bullet points). "
@@ -133,7 +131,7 @@ def generate_study_content(client: genai.Client, transcript: str, content_type: 
     return "json", json.loads(response.text)
 
 
-# --- 3. Display Functions ---
+
 
 def display_quiz_results(quiz_data):
     """Displays the generated quiz data interactively."""
@@ -168,9 +166,9 @@ def display_flashcard_results(card_data):
 
     for i, card in enumerate(flashcards):
         with cols[i % 3]:
-            # Use a container for card styling
+            
             with st.container(border=True):
-                # Using a session state flag to track the "flipped" status
+                
                 if st.session_state.get(f'card_{i}_flipped', False):
                     st.markdown(f"**Concept:** {card['concept']}")
                     st.markdown(f"**Definition:** {card['definition']}")
@@ -185,14 +183,14 @@ def display_flashcard_results(card_data):
                         st.rerun()
 
 
-# --- 4. Main Streamlit App Layout ---
+
 
 def main():
     st.set_page_config(page_title="Lecture AI Assistant", layout="wide")
     st.title("🎤 Lecture Voice-to-Notes Generator")
     st.markdown("Upload audio to generate a **time-synced transcript**, structured **Summary Notes**, an interactive **Quiz**, and helpful **Flashcards**.")
 
-    # --- Sidebar for Input ---
+    
     with st.sidebar:
         st.header("Lecture Input")
         uploaded_file = st.file_uploader(
@@ -204,72 +202,72 @@ def main():
         st.markdown("---")
         process_button = st.button("Generate All Study Content", type="primary", use_container_width=True)
 
-    # --- Main Logic on Button Click ---
+    
     if process_button:
         if not uploaded_file:
             st.error("Please upload an audio file to begin.")
             return
 
         client = get_ai_client()
-        # If client is None, it means the API key check failed, and an error message is already shown.
+        
         if not client: return
 
-        # Prepare temporary file storage
+        
         temp_audio_dir = "temp_audio_file"
         temp_audio_path = os.path.join(temp_audio_dir, uploaded_file.name)
         os.makedirs(temp_audio_dir, exist_ok=True) 
 
-        # Save the uploaded file temporarily
+        
         try:
             with open(temp_audio_path, "wb") as f:
                 f.write(uploaded_file.getbuffer())
 
-            # Start the main processing flow
+            
             with st.status("Processing lecture and generating content...", expanded=True) as status:
                 
-                # 1. Transcribe (Multimodal)
+                
                 transcript = transcribe_audio_and_time_sync(client, temp_audio_path)
                 st.session_state['transcript'] = transcript
 
-                # 2. Generate Summary Notes
+                
                 _, notes_content = generate_study_content(client, transcript, "Summary Notes", 2)
                 st.session_state['notes'] = notes_content
 
-                # 3. Generate Quiz
+            
                 _, quiz_content = generate_study_content(client, transcript, "Quiz", 3)
                 st.session_state['quiz'] = quiz_content
 
-                # 4. Generate Flashcards
+                
                 _, flashcard_content = generate_study_content(client, transcript, "Flashcards", 4)
                 st.session_state['flashcards'] = flashcard_content
                 
             status.update(label="All study materials generated successfully!", state="complete", expanded=False)
             st.toast("Processing complete! Your materials are ready.", icon='🚀')
-            st.rerun() # Rerun to display the output cleanly
+            st.rerun() 
 
         except Exception as e:
             st.error(f"An unexpected error occurred during content generation: {e}")
             st.warning("Ensure the audio quality is good and the content is clearly spoken.")
         finally:
-            # Clean up the temporary file
+            
             if os.path.exists(temp_audio_path):
                 os.remove(temp_audio_path)
     
-    # --- Display Results ---
+    
     if 'transcript' in st.session_state:
         
-        # --- Display Transcript ---
+        
         st.markdown("---")
         st.header("1. Original Time-Synced Transcript")
         st.info("The AI included timestamps to link notes to key moments in the audio.")
         st.code(st.session_state['transcript'], language='markdown')
 
-        # --- Display Notes ---
+        
         st.markdown("---")
         st.header("2. Summary Notes")
         st.markdown(st.session_state['notes'])
 
-        # --- Display Quiz and Flashcards side-by-side ---
+        
         st.markdown("---")
         st.header("3. Interactive Study Tools")
         
@@ -281,11 +279,7 @@ def main():
         with card_col:
             display_flashcard_results(st.session_state['flashcards'])
 
-        # with st.expander("Show Raw Structured Data (for debugging)", expanded=False):
-        #     st.json({
-        #         "Quiz": st.session_state.get('quiz', {}),
-        #         "Flashcards": st.session_state.get('flashcards', {})
-        #     })
+        
 
 
 if __name__ == "__main__":
