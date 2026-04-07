@@ -20,12 +20,11 @@ Built using **Google Gemini API**, **Streamlit**, and **Pydantic**, this tool he
   Generates clean, structured notes using Markdown formatting.
 
 -  **Interactive Quiz**  
-  - 5 MCQs generated from lecture content  
-  - Instant feedback on answers  
+   5 MCQs generated from lecture content   
 
 -  **Flashcards Generator**  
-  - 10 key concepts with definitions  
-  - Flip-card UI for active recall learning  
+   10 key concepts with definitions  
+  Flip-card UI for active recall learning  
 
 -  **End-to-End Automation**  
   Upload audio → Get all study materials instantly  
