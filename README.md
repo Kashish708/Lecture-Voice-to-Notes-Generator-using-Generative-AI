@@ -43,5 +43,5 @@ Built using **Google Gemini API**, **Streamlit**, and **Pydantic**, this tool he
 
 ## Live Demo
 
-👉 https://your-app-name.streamlit.app/
+👉 https://voice-to-notes-generator-au38yent6q9defikhekvnk.streamlit.app/
 
