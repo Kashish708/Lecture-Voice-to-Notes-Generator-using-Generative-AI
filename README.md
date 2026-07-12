@@ -41,3 +41,7 @@ Built using **Google Gemini API**, **Streamlit**, and **Pydantic**, this tool he
 
 ---
 
+## Live Demo
+
+👉 https://your-app-name.streamlit.app/
+
